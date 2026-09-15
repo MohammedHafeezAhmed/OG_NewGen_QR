@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Attendance Admin Dashboard</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                sans-serif;
+        }
+
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 15px;
+
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+
+            width: 100%;
+            max-width: 480px;
+
+            box-shadow:
+                0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #38bdf8;
+            font-size: 1.3rem;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+
+            display: block;
+
+            margin-top: 12px;
+        }
+
+        input,
+        select {
+
+            width: 100%;
+
+            padding: 12px;
+
+            margin-top: 5px;
+
+            background: #334155;
+
+            border: 1px solid #475569;
+
+            color: #fff;
+
+            border-radius: 8px;
+
+            font-size: 1rem;
+
+            outline: none;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+        }
+
+        button {
+
+            background: #0284c7;
+
+            color: white;
+
+            border: none;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            font-weight: bold;
+
+            width: 100%;
+
+            margin-top: 15px;
+
+            cursor: pointer;
+
+            font-size: 1rem;
+        }
+
+        button:active {
+            opacity: 0.8;
+        }
+
+        .btn-add {
+
+            width: auto;
+
+            background: #334155;
+
+            border: 1px solid #475569;
+
+            font-size: 1.2rem;
+
+            padding: 10px 16px;
+
+            border-radius: 8px;
+        }
+
+        .box {
+
+            background: #0f172a;
+
+            border: 1px dashed #475569;
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+            margin-top: 15px;
+        }
+
+        .usn-list {
+
+            font-family: monospace;
+
+            color: #4ade80;
+
+            font-size: 1.1rem;
+
+            letter-spacing: 1px;
+
+            word-wrap: break-word;
+
+            line-height: 1.6;
+        }
+
+        .wa-group-btn {
+
+            background: #25d366;
+
+            color: #000;
+
+            font-weight: bold;
+
+            margin-top: 8px;
+        }
+
+        .wa-teacher-btn {
+
+            background: #059669;
+
+            margin-top: 10px;
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="card">
+
+    <h2>⚡ Attendance Dashboard</h2>
+
+
+    <!-- SAVED PRESETS -->
+
+    <label>Saved Presets</label>
+
+    <div class="row">
+
+        <select
+            id="presetSelect"
+            onchange="loadPreset()"
+        >
+
+            <option value="">
+                -- Select Preset --
+            </option>
+
+        </select>
+
+
+        <button
+            type="button"
+            class="btn-add"
+            onclick="toggleNewPreset()"
+        >
+            +
+        </button>
+
+    </div>
+
+
+    <!-- NEW PRESET -->
+
+    <div
+        id="newPresetFields"
+        style="
+            display:none;
+            margin-top:10px;
+            border-top:1px solid #334155;
+            padding-top:10px;
+        "
+    >
+
+        <input
+            type="text"
+            id="newSub"
+            placeholder="Subject Name (e.g. Mathematics)"
+        >
+
+        <input
+            type="tel"
+            id="newPhone"
+            placeholder="Teacher Phone (e.g. 919876543210)"
+        >
+
+        <button
+            type="button"
+            onclick="savePreset()"
+            style="
+                background:#059669;
+                margin-top:8px;
+            "
+        >
+            Save Preset
+        </button>
+
+    </div>
+
+
+    <!-- SUBJECT -->
+
+    <label>Subject Name</label>
+
+    <input
+        type="text"
+        id="subject"
+        placeholder="e.g. Operating Systems"
+    >
+
+
+    <!-- PHONE -->
+
+    <label>Teacher WhatsApp Number</label>
+
+    <input
+        type="tel"
+        id="phone"
+        placeholder="91XXXXXXXXXX"
+    >
+
+
+    <!-- GENERATE -->
+
+    <button
+        type="button"
+        onclick="generateLink()"
+    >
+        Generate 10-Min Link
+    </button>
+
+
+    <!-- ACTIVE SESSION -->
+
+    <div
+        id="activeSection"
+        style="display:none;"
+    >
+
+        <div class="box">
+
+            <label>Shareable Link</label>
+
+            <input
+                type="text"
+                id="generatedLink"
+                readonly
+                onclick="this.select()"
+            >
+
+
+            <button
+                type="button"
+                class="wa-group-btn"
+                onclick="shareToWhatsAppGroup()"
+            >
+                📲 Share Link to WhatsApp Group
+            </button>
+
+
+            <div
+                style="
+                    font-size:0.85rem;
+                    color:#f59e0b;
+                    margin-top:8px;
+                    font-weight:bold;
+                "
+                id="timer"
+            >
+                Time Remaining: 10:00
+            </div>
+
+        </div>
+
+
+        <!-- LIVE ATTENDANCE -->
+
+        <div class="box">
+
+            <label>
+                Live Attendance
+                (<span id="count">0</span> Scanned)
+            </label>
+
+            <div
+                id="liveUSNs"
+                class="usn-list"
+            >
+                None yet
+            </div>
+
+        </div>
+
+
+        <!-- SEND TO TEACHER -->
+
+        <button
+            type="button"
+            class="wa-teacher-btn"
+            onclick="sendToTeacher()"
+        >
+            Send Attendance to Teacher
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    let currentSessionId = null;
+
+    let pollInterval = null;
+
+
+    // ========================================================
+    // FETCH PRESETS
+    // ========================================================
+
+    async function fetchPresets() {
+
+        try {
+
+            let res =
+                await fetch('/api/presets');
+
+            let data =
+                await res.json();
+
+            let sel =
+                document.getElementById('presetSelect');
+
+            sel.innerHTML =
+                '<option value="">-- Select Preset --</option>';
+
+            data.presets.forEach((p, idx) => {
+
+                sel.innerHTML +=
+                    `<option value="${idx}">
+                        ${p.subject} (${p.phone})
+                    </option>`;
+            });
+
+            window.presetsData =
+                data.presets;
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+    }
+
+
+    // ========================================================
+    // LOAD PRESET
+    // ========================================================
+
+    function loadPreset() {
+
+        let idx =
+            document.getElementById(
+                'presetSelect'
+            ).value;
+
+        if (idx !== "") {
+
+            document.getElementById(
+                'subject'
+            ).value =
+                window.presetsData[idx].subject;
+
+            document.getElementById(
+                'phone'
+            ).value =
+                window.presetsData[idx].phone;
+        }
+    }
+
+
+    // ========================================================
+    // TOGGLE NEW PRESET
+    // ========================================================
+
+    function toggleNewPreset() {
+
+        let el =
+            document.getElementById(
+                'newPresetFields'
+            );
+
+        el.style.display =
+            el.style.display === 'none'
+                ? 'block'
+                : 'none';
+    }
+
+
+    // ========================================================
+    // SAVE PRESET
+    // ========================================================
+
+    async function savePreset() {
+
+        let sub =
+            document.getElementById(
+                'newSub'
+            ).value;
+
+        let phone =
+            document.getElementById(
+                'newPhone'
+            ).value;
+
+        if (!sub || !phone) {
+
+            return alert(
+                'Fill both subject and phone'
+            );
+        }
+
+
+        await fetch(
+            '/api/presets',
+            {
+                method: 'POST',
+
+                headers: {
+                    'Content-Type':
+                        'application/json'
+                },
+
+                body: JSON.stringify({
+                    subject: sub,
+                    phone: phone
+                })
+            }
+        );
+
+
+        document.getElementById(
+            'newSub'
+        ).value = '';
+
+        document.getElementById(
+            'newPhone'
+        ).value = '';
+
+
+        toggleNewPreset();
+
+        fetchPresets();
+    }
+
+
+    // ========================================================
+    // GENERATE ATTENDANCE LINK
+    // ========================================================
+
+    async function generateLink() {
+
+        let sub =
+            document.getElementById(
+                'subject'
+            ).value.trim();
+
+        let phone =
+            document.getElementById(
+                'phone'
+            ).value.trim();
+
+
+        if (!sub || !phone) {
+
+            return alert(
+                'Enter subject and phone'
+            );
+        }
+
+
+        try {
+
+            let res =
+                await fetch(
+                    '/api/generate-link',
+                    {
+                        method: 'POST',
+
+                        headers: {
+                            'Content-Type':
+                                'application/json'
+                        },
+
+                        body: JSON.stringify({
+                            subject: sub,
+                            phone: phone
+                        })
+                    }
+                );
+
+
+            let data =
+                await res.json();
+
+
+            if (data.status !== 'success') {
+
+                return alert(
+                    data.message ||
+                    'Could not generate link'
+                );
+            }
+
+
+            currentSessionId =
+                data.session_id;
+
+
+            // Flask now returns the COMPLETE
+            // public/local URL automatically.
+            document.getElementById(
+                'generatedLink'
+            ).value =
+                data.link;
+
+
+            document.getElementById(
+                'activeSection'
+            ).style.display =
+                'block';
+
+
+            if (pollInterval) {
+
+                clearInterval(
+                    pollInterval
+                );
+            }
+
+
+            pollInterval =
+                setInterval(
+                    updateLiveStats,
+                    2000
+                );
+
+
+            updateLiveStats();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                'Server connection failed'
+            );
+        }
+    }
+
+
+    // ========================================================
+    // WHATSAPP GROUP
+    // ========================================================
+
+    function shareToWhatsAppGroup() {
+
+        let link =
+            document.getElementById(
+                'generatedLink'
+            ).value;
+
+        let sub =
+            document.getElementById(
+                'subject'
+            ).value;
+
+
+        let text =
+            `Scan Attendance for ${sub}:\n${link}`;
+
+
+        window.open(
+            `https://api.whatsapp.com/send?text=${
+                encodeURIComponent(text)
+            }`,
+            '_blank'
+        );
+    }
+
+
+    // ========================================================
+    // LIVE ATTENDANCE
+    // ========================================================
+
+    async function updateLiveStats() {
+
+        if (!currentSessionId) {
+            return;
+        }
+
+
+        try {
+
+            let res =
+                await fetch(
+                    `/api/live-data/${currentSessionId}`
+                );
+
+
+            if (!res.ok) {
+                return;
+            }
+
+
+            let data =
+                await res.json();
+
+
+            document.getElementById(
+                'count'
+            ).innerText =
+                data.count;
+
+
+            document.getElementById(
+                'liveUSNs'
+            ).innerText =
+                data.formatted_list ||
+                'None yet';
+
+
+            let mins =
+                Math.floor(
+                    data.time_remaining / 60
+                );
+
+
+            let secs =
+                data.time_remaining % 60;
+
+
+            document.getElementById(
+                'timer'
+            ).innerText =
+                `Time Remaining: ${mins}:${
+                    secs < 10 ? '0' : ''
+                }${secs}`;
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+    }
+
+
+    // ========================================================
+    // SEND ATTENDANCE TO TEACHER
+    // ========================================================
+
+    function sendToTeacher() {
+
+        let phone =
+            document.getElementById(
+                'phone'
+            ).value;
+
+        let sub =
+            document.getElementById(
+                'subject'
+            ).value;
+
+        let usnText =
+            document.getElementById(
+                'liveUSNs'
+            ).innerText;
+
+
+        let msg =
+            `*Attendance for ${sub}*\n\n` +
+            `${usnText}\n\n` +
+            `_Generated by AI Agent_`;
+
+
+        window.open(
+            `https://api.whatsapp.com/send?phone=${
+                phone
+            }&text=${
+                encodeURIComponent(msg)
+            }`,
+            '_blank'
+        );
+    }
+
+
+    // ========================================================
+    // LOAD PRESETS ON PAGE OPEN
+    // ========================================================
+
+    fetchPresets();
+
+</script>
+
+
+</body>
+
+</html>
