@@ -139,15 +139,6 @@ The application will be available at:
 http://127.0.0.1:5000/admin
 ```
 
-## 🌐 Deployment
-
-The application can be deployed as a Python web service on platforms that support Flask applications.
-
-For production deployment with Gunicorn:
-
-```bash
-gunicorn app:app
-```
 
 The application is designed so that both the administrator dashboard and student attendance interface operate through the same web application.
 
